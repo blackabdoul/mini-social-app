@@ -1,0 +1,150 @@
+# 🔐 PHP Authentication System — Day 1
+
+This repository documents my step-by-step backend journey, starting with the fundamentals of authentication using PHP sessions.
+
+This README covers Day 1 only, strictly based on what is currently implemented and shown in the screenshots.
+
+## 📅 Day 1 — Session-Based Login System
+### 🎯 Goal
+
+Understand how authentication works on the backend using PHP:
+
+Sessions
+
+Login flow
+
+Protected pages
+
+Logout handling
+
+## ✅ What Was Implemented (Day 1)
+### 1️⃣ Login Page (index.php)
+
+A login form with:
+
+Email field
+
+Password field
+
+Clean, centered UI with a gradient background
+
+PHP session started at the top of the file
+
+Displays feedback messages using session variables
+
+### 2️⃣ Session Handling
+
+Sessions are initialized using:
+
+session_start();
+
+
+User email is stored in $_SESSION after successful login
+
+Session data is used to control access to pages
+
+### 3️⃣ Authentication Logic
+
+User credentials are checked on form submission
+
+If credentials are valid:
+
+User is redirected to the dashboard
+
+If credentials are invalid:
+
+An error message is stored in the session
+
+### 4️⃣ Protected Dashboard (dashboard.php)
+
+Dashboard page is only accessible after login
+
+Displays a personalized welcome message:
+
+Welcome, user@email.com
+
+
+Contains a Logout button
+
+### 5️⃣ Logout System (logout.php)
+
+Logout destroys the session using:
+
+session_destroy();
+
+
+User is redirected back to the login page
+
+Prevents access to dashboard after logout
+
+### 6️⃣ Database Configuration (config.php)
+
+Database connection established using PDO
+
+Credentials stored in a separate configuration file
+
+Errors handled with try...catch
+
+## 🗂️ Project Structure (Day 1)
+/project-root
+│
+├── config.php        # PDO database connection
+├── index.php         # Login page
+├── dashboard.php     # Protected page (session-based)
+├── logout.php        # Session destruction
+└── README.md
+
+## 🖼️ Screenshots (Day 1)
+Login Page
+![Login Page Screenshot](./screenshots1/Screenshot_2025-12-22_17_47_30.png)
+
+Dashboard After Login
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-22_17_47_41.png)
+
+Codespace (PHP + Sessions)
+![Codespace Screenshot](./screenshots1/Screenshot_2025-12-22_17_38_45.png)
+
+📌 Screenshots reflect the exact state of the project at Day 1.
+
+## 🛠️ Tech Used (Day 1 Only)
+
+PHP
+
+PHP Sessions
+
+MySQL (PDO)
+
+HTML & CSS
+
+Apache (Localhost)
+
+## 📌 Key Takeaways (Day 1)
+
+Authentication starts with session control
+
+Backend logic decides access — not the UI
+
+Sessions persist state across requests
+
+Logout is just as important as login
+
+## 🔜 What Comes Next (Not Implemented Yet)
+
+These are not part of Day 1:
+
+Password hashing
+
+Database-driven users table
+
+Registration system
+
+Security hardening
+
+Middleware / MVC
+
+They will be introduced incrementally in future days.
+
+👤 Author
+
+Abdoul Malick Lawal
+Backend Journey — Day 1 🚀
