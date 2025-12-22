@@ -102,7 +102,7 @@ Dashboard After Login
 ![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-22_17_47_41.png)
 
 Codespace (PHP + Sessions)
-![Codespace Screenshot](./screenshots1/Screenshot_2025-12-22_17_38_45.png)
+![Codespace Screenshot](./screenshots1/Screenshot_2025-12-22_18_36_18.png)
 
 📌 Screenshots reflect the exact state of the project at Day 1.
 
