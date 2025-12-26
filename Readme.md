@@ -147,4 +147,68 @@ They will be introduced incrementally in future days.
 👤 Author
 
 Abdoul Malick Lawal
+<<<<<<< HEAD
 Backend Journey — Day 1 🚀
+=======
+Backend Journey — Day 1 🚀
+
+# 🔐 PHP Authentication System — Day 2
+## 📅 Day 2 — User Registration & Password Security
+## 🎯 Focus
+
+Build a proper user registration flow and introduce basic security practices for handling user credentials.
+
+## ✅ What Was Implemented (Day 2)
+
+### A dedicated registration page (register.php) with:
+
+Email input
+
+Password and confirm-password fields
+
+### Server-side validation to ensure:
+
+Valid email format
+
+Matching passwords
+
+Minimum password length
+
+### Prevention of duplicate accounts by checking if an email already exists
+
+### Secure password storage using:
+
+password_hash()
+
+
+### Database operations handled with PDO prepared statements
+
+### Session-based error and success messages for user feedback
+
+### Clear redirect flow between registration and login pages
+
+## 🖼️ Screenshots (Day 2)
+Codespace 
+![Login Page Screenshot](./screenshots1/Screenshot_2025-12-26_08_38_41.png)
+
+Different output based on conditions
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-26_08-04-09.png)
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-26_08-06-20.png)
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-26_08-07-19.png)
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-26_08-09-17.png)
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-26_08-28-09.png)
+
+## 🧠 Key Takeaways (Day 2)
+
+This stage introduced real backend responsibilities:
+
+Validating user input on the server
+
+Protecting user credentials
+
+Enforcing data integrity before database writes
+
+Managing user feedback using sessions
+
+### Registration is more than a form — it’s the first layer of application security.
+
