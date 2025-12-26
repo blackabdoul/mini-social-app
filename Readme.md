@@ -146,12 +146,6 @@ They will be introduced incrementally in future days.
 
 👤 Author
 
-Abdoul Malick Lawal
-<<<<<<< HEAD
-Backend Journey — Day 1 🚀
-=======
-Backend Journey — Day 1 🚀
-
 # 🔐 PHP Authentication System — Day 2
 ## 📅 Day 2 — User Registration & Password Security
 ## 🎯 Focus
