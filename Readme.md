@@ -154,13 +154,13 @@ Build a proper user registration flow and introduce basic security practices for
 
 ## ✅ What Was Implemented (Day 2)
 
-### A dedicated registration page (register.php) with:
+### 👉 A dedicated registration page (register.php) with:
 
 Email input
 
 Password and confirm-password fields
 
-### Server-side validation to ensure:
+### 👉 Server-side validation to ensure:
 
 Valid email format
 
@@ -168,18 +168,18 @@ Matching passwords
 
 Minimum password length
 
-### Prevention of duplicate accounts by checking if an email already exists
+### 👉 Prevention of duplicate accounts by checking if an email already exists
 
-### Secure password storage using:
+### 👉 Secure password storage using:
 
 password_hash()
 
 
-### Database operations handled with PDO prepared statements
+### 👉 Database operations handled with PDO prepared statements
 
-### Session-based error and success messages for user feedback
+### 👉 Session-based error and success messages for user feedback
 
-### Clear redirect flow between registration and login pages
+### 👉 Clear redirect flow between registration and login pages
 
 ## 🖼️ Screenshots (Day 2)
 Codespace 
