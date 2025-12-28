@@ -206,3 +206,68 @@ Managing user feedback using sessions
 
 ### Registration is more than a form — it’s the first layer of application security.
 
+# 🔐 PHP Authentication System — Day 3
+## 📅 Day 2 — Email Verification System
+## 🎯 Goal
+
+Implement secure email verification to ensure only valid users can activate their accounts after registration.
+
+## 🛠️ What was implemented
+
+👉Token-based email verification
+
+Verification token is received via URL (verify.php?token=...)
+
+Token is securely checked against the database using prepared statements (PDO)
+
+👉Validation checks
+
+-Invalid or missing token handling
+
+-Already verified account detection
+
+-Token expiration check using timestamps
+
+👉Account activation
+
+-Marks user as verified (is_verified = 1)
+
+-Clears verification token and expiration fields after success
+
+👉Session feedback
+
+-Success message stored in session for login flow
+
+👉User feedback UI
+
+-Dynamic success, error, and info states
+
+-Clean verification page with visual indicators and clear messages
+
+## 🔐 Key concepts learned
+
+-Secure token validation
+
+-Time-based token expiration
+
+-Email verification logic
+
+-Defensive backend programming
+
+-Separation of authentication states (registered vs verified)
+
+## 📂 Files involved
+
+-verify.php
+
+-Database users table (verification token & expiry fields)
+
+## 🖼️ Screenshots (Day 3)
+Codespace 
+![Login Page Screenshot](./screenshots1/Screenshot_2025-12-28_19_13_34.png)
+
+Different output based on conditions
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-28_18-52-56.png)
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-28_18-54-48.png)
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-28_19-09-15.png)
+![Successful](./screenshots1/Screenshot_2025-12-28_19-09-34.png)
