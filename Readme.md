@@ -271,3 +271,33 @@ Different output based on conditions
 ![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-28_18-54-48.png)
 ![Dashboard Page Screenshot](./screenshots1/Screenshot_2025-12-28_19-09-15.png)
 ![Successful](./screenshots1/Screenshot_2025-12-28_19-09-34.png)
+
+
+# Day 4 – Real Email Verification with PHPMailer
+## 🎯 Goal
+
+On Day 4, I implemented real email delivery for MiniSocialApp using PHPMailer and Gmail SMTP.
+
+## 🛠️ The application can now:
+
+-Send verification emails to newly registered users
+
+-Resend verification emails on user request
+
+-Enforce email verification before allowing login
+
+This was achieved by configuring a dedicated email_config.php file with PHPMailer, a Gmail App Password, and secure SMTP settings. With this update, the authentication flow now mirrors real-world production systems where email ownership must be confirmed before access is granted.
+
+This milestone marks a major step from a local demo system to a production-ready authentication workflow.
+
+## 🖼️ Screenshots (Day 4)
+Codespace 
+![Codespace](./screenshots1/Screenshot_2026-01-08_16_37_08.png)
+
+### 👉 For newly registering user
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2026-01-08_16-21-41.png)
+![email](./screenshots1/Screenshot_2026-01-08_16-22-37.png)
+
+### 👉 For registered but unverified user requesting for email resend
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2026-01-08_16-10-51.png)
+![email](./screenshots1/Screenshot_2026-01-08_16-15-21.png)
