@@ -70,9 +70,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </html>
     ";
     
-    $headers = "MIME-Version: 1.0" . "\r\n";
-    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-    $headers .= "From: noreply@yoursite.com" . "\r\n";
     
     if (sendEmail($to, $subject, $message)) {
         // ✅ Success - ALWAYS redirect to login (never show form)
