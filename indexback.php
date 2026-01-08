@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $password = $_POST["password"] ?? "";
 
     if ($email && $password) {
-        $sql = "SELECT id, email, password FROM users WHERE email = :email LIMIT 1";
+        $sql = "SELECT id, email, is_verified, password FROM users WHERE email = :email LIMIT 1";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(":email", $email, PDO::PARAM_STR);
         $stmt->execute();
@@ -17,6 +17,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             // 🔐 Authentication happens HERE
         if ($user && password_verify($password, $user["password"])) {
+
+            if ($user['is_verified'] == 0) {
+                // ✨ NEW: Store email in session for resend page
+                $_SESSION['unverified_email'] = $email;
+                $_SESSION['error'] = "Please verify your email before logging in.";
+                header("Location: index.php");
+                exit();
+            }
+
             $_SESSION["id_user"] = $user["id"];
             $_SESSION["user_email"] = $user["email"];
 
