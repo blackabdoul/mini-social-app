@@ -1,13 +1,17 @@
 <?php
-
 session_start();
-$error = $_SESSION['error'] ?? ''; // Read error from session
-unset($_SESSION['error']); // Clear it immediately
-$success = $_SESSION['success'] ?? ''; // Read error from session
-unset($_SESSION['success']); // Clear it immediately
+$error = $_SESSION['error'] ?? '';
+$success = $_SESSION['success'] ?? '';
+$unverified_email = $_SESSION['unverified_email'] ?? '';
 
+if(isset($_GET['account_deleted'])){
+    $success="Account successfully deleted";
+}
+
+unset($_SESSION['error']);
+unset($_SESSION['success']);
+unset($_SESSION['unverified_email']);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +20,6 @@ unset($_SESSION['success']); // Clear it immediately
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #3F5EFB;
             background: radial-gradient(circle, rgba(63, 94, 251, 1) 0%, rgba(252, 70, 107, 1) 100%);
             height: 100vh;
             display: flex;
@@ -70,6 +73,7 @@ unset($_SESSION['success']); // Clear it immediately
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #fca5a5;
+            font-size: 14px;
         }
         .success {
             color: #16a34a;
@@ -79,38 +83,92 @@ unset($_SESSION['success']); // Clear it immediately
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #86efac;
+            font-size: 14px;
+        }
+        .links {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .links a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        .divider {
+            text-align: center;
+            margin: 10px 0;
+            color: #999;
+        }
+        .action-button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .action-button:hover {
+            background: #1e40af;
         }
     </style>
 </head>
 <body>
+    <div class="login-box">
+        <h2>Login</h2>
+        
+        <?php if ($error): ?>
+            <div class="error">
+                <?= htmlspecialchars($error) ?>
+                
+                <?php if ($unverified_email): ?>
+                    <!-- ✨ NEW: Show resend button for unverified users -->
+                    <form method="POST" action="resend-verification.php" style="margin-top: 10px;">
+                        <input type="hidden" name="email" value="<?= htmlspecialchars($unverified_email) ?>">
+                        <button type="submit" class="action-button" style="border: none; cursor: pointer;">
+                            📧 Resend Verification Email
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if ($success): ?>
+            <div class="success"><?= htmlspecialchars($success) ?></div>
+        <?php endif; ?>
+        
+        <form method="POST" action="indexback.php">
+            <label>Email</label>
+            <input type="email" name="email" required>
+            
+            <label>Password</label>
+            <input type="password" name="password" required>
+            
+            <button type="submit">Login</button>
+        </form>        
+        
+        <div class="links">
+            Don't have an account?
+            <a href="register.php">Sign up</a>
+        </div>
 
-<div class="login-box">
-    <h2>Login</h2>
+        <div class="divider">•</div>
 
-    <?php if ($error): ?>
-        <div class="error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-
-    <?php if ($success): ?>
-        <div class="success"><?= htmlspecialchars($success) ?></div>
-    <?php endif; ?>
-
-    <form method="POST" action="indexback.php">
-        <label>Email</label>
-        <input type="email" name="email" required>
-
-        <label>Password</label>
-        <input type="password" name="password" required>
-
-        <button type="submit">Login</button>
-    </form>        
-    
-    <p style="text-align:center; margin-top:10px;">
-        Don’t have an account?
-        <a href="register.php">Sign up</a>
-    </p>
-
-</div>
-
+        <div class="links">
+            <a href="forgot_passwd.php">Forgot password?</a>
+        </div>
+        
+       <?php if (!$unverified_email): ?>
+            <div class="divider">•</div>
+            
+            <div class="links">
+                <a href="resend-verification.php">Resend verification email</a>
+            </div>
+        <?php endif; ?>
+    </div>
 </body>
 </html>
