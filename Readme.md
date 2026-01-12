@@ -301,3 +301,80 @@ Codespace
 ### 👉 For registered but unverified user requesting for email resend
 ![Dashboard Page Screenshot](./screenshots1/Screenshot_2026-01-08_16-10-51.png)
 ![email](./screenshots1/Screenshot_2026-01-08_16-15-21.png)
+
+# 📅 Day 5 – Secure Password Reset System (Forgot & Reset Password)
+
+On Day 5, I implemented a complete and secure password recovery workflow for the MiniSocialApp, similar to what is used in real-world platforms like GitHub and LinkedIn.
+This feature allows users to safely regain access to their accounts while protecting the system from abuse and information leaks.
+
+## 🔐 Why “Forgot Password” Matters
+
+-Password loss is unavoidable. A secure recovery system must:
+-Help legitimate users recover access
+-Prevent attackers from exploiting reset flows
+-Avoid revealing whether an email exists
+
+This implementation prioritizes security without sacrificing usability.
+
+## 🧩 Feature Overview
+### 1️⃣ Forgot Password Request (forgot_passwd.php)
+
+-Users submit their email to request a reset.
+Key logic:
+-Email format validation
+-Silent user lookup (no account disclosure)
+-Secure reset token generation
+-1-hour token expiration
+-Reset link sent via real email (PHPMailer + Gmail SMTP)
+-Generic success message for all cases
+
+🔒 Prevents email enumeration attacks.
+
+### 2️⃣ Email-Based Reset Link
+
+Users receive a one-time, time-limited reset link via email.
+If they didn’t request it, they can safely ignore it.
+
+### 3️⃣ Token Validation (reset_passwd.php)
+
+On link access:
+-Token existence is verified
+-Expiration is checked
+-Invalid or expired tokens are rejected immediately
+-This blocks replay attacks and old-link abuse.
+
+### 4️⃣ Password Reset Rules
+
+Before updating:
+-Passwords must match
+-Minimum length enforced
+-New password cannot equal the old one
+
+This prevents fake resets and encourages better security practices.
+
+### 5️⃣ Secure Password Update
+
+-Password hashed with password_hash()
+-Reset token invalidated immediately
+-Expiration cleared
+-User redirected to login
+-Tokens become unusable after a successful reset.
+
+🛡️ Security Practices Applied
+
+-Token-based recovery
+-Time-limited reset links
+-Strong password hashing
+-No account existence disclosure
+-One-time token usage
+-Old-password reuse prevention
+
+## 🖼️ Screenshots (Day 5)
+Codespace 
+![Login Page Screenshot](./screenshots1/Screenshot_2026-01-12_16_59_54.png)
+
+Typical Process When Resetting Password
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2026-01-12_16-22-45.png)
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2026-01-12_16-23-18.png)
+![Dashboard Page Screenshot](./screenshots1/Screenshot_2026-01-12_16-24-23.png)
+![Successful](./screenshots1/Screenshot_2026-01-12_16-25-16.png)
