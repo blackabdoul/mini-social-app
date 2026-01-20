@@ -378,3 +378,81 @@ Typical Process When Resetting Password
 ![Dashboard Page Screenshot](./screenshots1/Screenshot_2026-01-12_16-23-18.png)
 ![Dashboard Page Screenshot](./screenshots1/Screenshot_2026-01-12_16-24-23.png)
 ![Successful](./screenshots1/Screenshot_2026-01-12_16-25-16.png)
+
+
+# Day 6 – User Profile Management & Account Control
+
+On Day 6, I implemented a full user profile system that allows authenticated users to manage their account securely and independently.
+
+## What Was Added
+
+### 1. Profile Page (profile.php)
+
+-Restricted access to logged-in users only (session-based authentication).
+
+-Fetches and displays user data directly from the database.
+
+-Clean UI showing:
+
+-Avatar placeholder
+
+-Email
+
+-Account creation date
+
+-Last profile update date
+
+### 2. Profile Actions Backend (profileback.php)
+Handled multiple sensitive user actions using a single controller pattern:
+
+-Update Personal Information
+
+--Full name, phone, bio, location, date of birth
+
+--Uses prepared statements to prevent SQL injection
+
+-Change Password
+
+--Verifies current password before update
+
+--Enforces minimum password length
+
+--Uses password hashing for security
+
+-Delete Account
+
+--Permanent account deletion with confirmation
+
+--Session destroyed immediately after deletion
+
+### 3. Profile Styling (profile-style.css)
+
+-Responsive, modern layout using CSS Grid
+
+-Clear separation between profile info, forms, and danger zone
+
+-Mobile-friendly adjustments for smaller screens
+
+## Key Concepts Practiced
+
+-Secure session handling
+
+-Authorization checks
+
+-Form handling with multiple actions
+
+-Password verification & hashing
+
+-Account lifecycle management (update → secure → delete)
+
+-Clean separation of logic, UI, and styles
+
+## 🖼️ Screenshots (Day 6)
+Codespace 
+![Workspace](./screenshots1/Screenshot_2026-01-20_07-12-01.png)
+
+Typical Process When Resetting Password
+![Personal info sectfion](./screenshots1/Screenshot_2026-01-20_06-53-44.png)
+![Password section](./screenshots1/Screenshot_2026-01-20_06-54-05.png)
+![Delete section](./screenshots1/Screenshot_2026-01-20_06-54-22.png)
+![Full view](./screenshots1/Screenshot_2026-01-20_06-57-17.png)
