@@ -451,8 +451,11 @@ Handled multiple sensitive user actions using a single controller pattern:
 Codespace 
 ![Workspace](./screenshots1/Screenshot_2026-01-20_07-12-01.png)
 
-Typical Process When Resetting Password
+Personal info section
 ![Personal info sectfion](./screenshots1/Screenshot_2026-01-20_06-53-44.png)
+Password section
 ![Password section](./screenshots1/Screenshot_2026-01-20_06-54-05.png)
+Delete section
 ![Delete section](./screenshots1/Screenshot_2026-01-20_06-54-22.png)
+Full view
 ![Full view](./screenshots1/Screenshot_2026-01-20_06-57-17.png)
