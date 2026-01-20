@@ -453,9 +453,12 @@ Codespace
 
 Personal info section
 ![Personal info sectfion](./screenshots1/Screenshot_2026-01-20_06-53-44.png)
+
 Password section
 ![Password section](./screenshots1/Screenshot_2026-01-20_06-54-05.png)
+
 Delete section
 ![Delete section](./screenshots1/Screenshot_2026-01-20_06-54-22.png)
+
 Full view
 ![Full view](./screenshots1/Screenshot_2026-01-20_06-57-17.png)
