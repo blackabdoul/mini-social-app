@@ -462,3 +462,83 @@ Delete section
 
 Full view
 ![Full view](./screenshots1/Screenshot_2026-01-20_06-57-17.png)
+
+# Day 7 – Selective Dark Mode Integration (Dashboard & Profile)
+
+On Day 7, I introduced a selective Dark Mode system to improve user experience while keeping the app clean and intentional.
+
+## 🎯 Design Decision
+
+Dark mode was added only to authenticated pages:
+
+✅ Dashboard
+
+✅ Profile
+
+The login page intentionally remains light-only to:
+
+-Avoid over-design
+
+-Keep the entry point simple and fast
+
+-Maintain focus on authentication (short, public-facing view)
+
+## 🌗 What Was Implemented
+
+✅ Theme toggle button (Light 🌞 / Dark 🌙) on Dashboard and Profile
+
+✅ CSS variables (:root + [data-theme="dark"]) for scalable theming
+
+✅ Persistent theme state using localStorage
+
+✅ Smooth transitions between themes
+
+✅ Shared theme behavior across Dashboard and Profile
+
+## 🛠 Modified Files
+
+✅ dashboard.php
+
+--Inline CSS with light/dark variables
+
+--Theme toggle logic with localStorage
+
+✅ profile.php
+
+--Theme toggle button + JS logic
+
+--Syncs with Dashboard theme
+
+✅ profile-style.css
+
+--Refactored to use CSS variables
+
+--Added dark-mode color palette
+
+## 🖼️ Screenshots (Day 7)
+Unchanged login page 
+![login](./screenshots1/Screenshot_2026-01-26_21-22-33.png)
+
+Dark dashboard page
+![Dark dashboard page](./screenshots1/Screenshot_2026-01-26_21-23-09.png)
+
+Light dashboard page
+![Light dashboard page](./screenshots1/Screenshot_2026-01-26_21-23-27.png)
+
+Dark profile page
+![Dark profile](./screenshots1/Screenshot_2026-01-26_21-24-17.png)
+
+Light profile page
+![Light profile](./screenshots1/Screenshot_2026-01-26_21-24-33.png)
+
+## ✅ Outcome
+
+-Cleaner UX with context-aware theming
+
+-No visual overload on the login page
+
+-Dark mode feels intentional, not cosmetic
+
+-Strong separation between public and authenticated UI
+
+🧩 This step reinforces a core UI principle: not every page needs every feature.
