@@ -166,5 +166,31 @@ unset($_SESSION['error']);
             </div>
         </div>
     </div>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
+        🌙 Dark Mode
+    </button>
+
+    <script>
+        // Load saved theme on page load
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateButton(savedTheme);
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateButton(newTheme);
+        }
+
+        function updateButton(theme) {
+            const btn = document.getElementById('themeBtn');
+            btn.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+    </script>
+
 </body>
 </html>
