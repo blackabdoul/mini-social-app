@@ -92,11 +92,16 @@ if(!isset($_SESSION["id_user"])){
 </head>
 <body>
     <div class="welcome-box">
-        <h1>Welcome, <?= htmlspecialchars($_SESSION["user_email"]) ?></h1>
+        <h1>Welcome, <?= htmlspecialchars($_SESSION["full_name"] ?? $_SESSION["user_email"]) ?></h1>
         <p>You have successfully logged in!</p>
         
         <div class="nav-links">
             <a href="profile.php">👤 My Profile</a>
+
+        <?php if(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+            <a href="admin-dashboard.php">⚙️ Admin Panel</a>
+        <?php endif; ?>
+
             <a href="logout.php">🚪 Logout</a>
         </div>
     </div>
