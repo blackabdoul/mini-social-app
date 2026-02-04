@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $password = $_POST["password"] ?? "";
 
     if ($email && $password) {
-        $sql = "SELECT id, email, is_verified, password FROM users WHERE email = :email LIMIT 1";
+        $sql = "SELECT id, email, role, full_name, is_verified, password FROM users WHERE email = :email LIMIT 1";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(":email", $email, PDO::PARAM_STR);
         $stmt->execute();
@@ -28,6 +28,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $_SESSION["id_user"] = $user["id"];
             $_SESSION["user_email"] = $user["email"];
+            $_SESSION["user_role"] = $user["role"];
+            $_SESSION["full_name"] = $user["full_name"];
 
             header("Location: dashboard.php");
             exit();
