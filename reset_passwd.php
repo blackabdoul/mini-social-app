@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $validToken) {
     $user = $simpassStmt->fetch(PDO::FETCH_ASSOC);
 
     if(password_verify($newPassword, $user['password'])){
-        $_SESSION['error']= "New password must be differnt from the previous one";
+        $_SESSION['error']= "New password must be different from the previous one";
         header("Location: reset_passwd.php?token=" . $token);
         exit(); 
 
