@@ -542,3 +542,104 @@ Light profile page
 -Strong separation between public and authenticated UI
 
 🧩 This step reinforces a core UI principle: not every page needs every feature.
+
+#  Day 8 – Admin System & Role-Based Access Control
+## Overview
+
+On Day 8, an Administrator system was introduced to MiniSocialApp. This adds role-based access control, a secure admin dashboard, and protections against unauthorized access to admin-only pages.
+
+## Key Features Implemented
+### 👥 User Roles
+
+-Added a role column to the users table (user / admin)
+
+-User role is loaded into the session at login
+
+-Session now stores:
+
+--id_user
+
+--user_email
+
+--full_name
+
+--user_role
+
+### 🔐 Role-Based UI Rendering
+
+Dashboard now conditionally displays the “Admin Panel” button
+
+Only users with role = admin can see and access admin features
+
+### 🛡️ Admin Access Protection
+
+-Created a reusable admin-check.php
+
+-Required in all admin pages
+
+-Prevents:
+
+--Non-logged-in users
+
+--Logged-in but non-admin users
+
+-Redirects unauthorized users back to the dashboard with an error message
+
+### ⚙️ Admin Dashboard
+
+-Centralized admin interface with:
+
+--User statistics (total, verified, unverified, admins)
+
+--Full users table
+
+-Admin actions:
+
+--Delete users (cannot delete self)
+
+--Promote/Demote users (admin ↔ user)
+
+--All actions handled securely via POST requests
+
+### 🎨 Styling & UX
+
+-Dedicated admin dashboard styles
+
+-Consistent layout with the rest of the app
+
+-Integrated Dark Mode support
+
+-Clear badges for:
+
+--User roles
+
+--Verification status
+
+## 🖼️ Screenshots (Day 8)
+ 
+![login](./screenshots1/Screenshot_2026-02-04_18-18-12.png)
+
+ 
+![Dark dashboard page](./screenshots1/Screenshot_2026-02-04_18-18-54.png)
+
+ 
+![Light dashboard page](./screenshots1/Screenshot_2026-02-04_18-19-30.png)
+
+ 
+![Dark profile](./screenshots1/Screenshot_2026-02-04_18-20-10.png)
+
+ 
+![Light profile](./screenshots1/Screenshot_2026-02-04_18-21-01.png)
+
+![login](./screenshots1/Screenshot_2026-02-04_18_58_14.png)
+
+
+## Why This Matters
+
+This milestone transforms MiniSocialApp from a basic authentication app into a multi-role system, laying the foundation for:
+
+Moderation tools
+
+Scalable permissions
+
+Real-world application architecture
