@@ -1,8 +1,12 @@
 <?php
-    $host= "localhost";
-    $name= "login";
-    $user = "appuser";          
-    $password = "StrongPassword123!";
+
+// Load environment variables
+require_once "load-env.php";
+
+    $host= $_ENV['DB_HOST'];
+    $name= $_ENV['DB_NAME'];
+    $user = $_ENV['DB_USER'];          
+    $password = $_ENV['DB_PASS'];
 
     try{
         $pdo = new PDO("mysql:host=$host;dbname=$name", $user, $password);
