@@ -643,3 +643,89 @@ Moderation tools
 Scalable permissions
 
 Real-world application architecture
+
+#  Day 9 – API Foundation & JWT Authentication
+
+On Day 9, I started expanding MiniSocialApp beyond server-rendered pages by introducing a dedicated REST API layer.
+A new /api directory was created to host endpoints for authentication and user management, preparing the project for future integrations with mobile apps, SPAs, or other services.
+
+## Key Implementations
+### API Structure
+
+Created a new /api directory to organize backend endpoints. Planned APIs include:
+
+login
+registration
+user
+users
+change-password
+
+This separates API logic from the traditional PHP pages, making the architecture more scalable.
+
+### JWT Authentication System
+
+Implemented a custom JWT (JSON Web Token) authentication mechanism.
+
+Features include:
+
+Token generation with HS256 signing
+
+Payload containing:
+
+user_id
+
+email
+
+role
+
+iat (issued at)
+
+exp (expiration – 24h)
+
+Token verification with signature validation
+
+Token extraction from Authorization Bearer headers
+
+Utility middleware functions:
+
+requireAuth() – protects endpoints requiring authentication
+
+requireAdmin() – restricts admin-only API routes
+
+### API Configuration Layer
+
+Created /api/config.php to standardize API behavior:
+
+Loads environment variables
+
+Reuses the parent database configuration
+
+Handles CORS headers
+
+Processes OPTIONS preflight requests
+
+Provides helper functions:
+
+sendResponse()
+
+getRequestBody()
+
+### Environment Management
+
+Improved security and configuration handling by introducing:
+
+.env file for environment variables
+
+Custom environment loader
+
+Generated and stored JWT_SECRET securely
+
+This ensures sensitive data like secrets and credentials stay outside the codebase.
+
+### Server Configuration
+
+Added .htaccess to support API routing and improve request handling.
+
+##  Screenshots (Day 9)
+ 
+![login](./screenshots1/Screenshot_2026-03-12_16_48_04.png)
