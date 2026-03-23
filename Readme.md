@@ -729,3 +729,69 @@ Added .htaccess to support API routing and improve request handling.
 ##  Screenshots (Day 9)
  
 ![login](./screenshots1/Screenshot_2026-03-12_16_48_04.png)
+
+# Day 10 – API Authentication Endpoints (Register & Login)
+
+## Overview
+
+On Day 10, I moved from building the API foundation to implementing and testing the first working authentication endpoints:
+➡️ /api/register
+➡️ /api/login
+
+Both endpoints were fully tested using Postman, with well-structured request bodies and clean JSON responses.
+
+## Register Endpoint (/api/register)
+
+Handles new user creation with proper validation and security.
+
+Key Features:
+    Validates email format and password length
+    Prevents duplicate registrations (409 Conflict)
+    Hashes passwords using password_hash()
+    Generates email verification token with expiration
+    Stores user with default role (user) and unverified status
+Response:
+    201 Created on success
+Returns:
+    success message
+    user_id
+    verification_required flag
+
+## Login Endpoint (/api/login)
+
+Authenticates users and issues a JWT token.
+
+Key Features:
+    Validates request method and input fields
+    Verifies credentials using password_verify()
+    Blocks login if email is not verified (403)
+    Generates JWT token with user data (id, email, role)
+Response:
+    200 OK on success
+Returns:
+    success message
+    JWT token
+    authenticated user details
+
+## API Testing (Postman)
+Structured raw JSON requests
+Verified status codes:
+    400 → Bad request
+    401 → Invalid credentials
+    403 → Not verified
+    409 → Conflict
+    201 / 200 → Success
+Confirmed consistent and predictable API responses
+
+## Key Takeaways
+Transitioned from theory (Day 9) to real working API endpoints
+Understood proper use of HTTP status codes
+Built secure authentication flow with validation + hashing + JWT
+Practiced real-world API testing workflows
+
+##  Screenshots (Day 9)
+
+### /api/register 
+![register](./screenshots1/Screenshot_2026-03-23_13_06_20.png)
+### /api/login
+![login](./screenshots1/Screenshot_2026-03-23_13_16_07.png)
