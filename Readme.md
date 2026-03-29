@@ -789,9 +789,122 @@ Understood proper use of HTTP status codes
 Built secure authentication flow with validation + hashing + JWT
 Practiced real-world API testing workflows
 
-##  Screenshots (Day 9)
+##  Screenshots (Day 10)
 
 ### /api/register 
 ![register](./screenshots1/Screenshot_2026-03-23_13_06_20.png)
 ### /api/login
 ![login](./screenshots1/Screenshot_2026-03-23_13_16_07.png)
+
+# Day 11 – User Management APIs & Role-Based Access Control
+
+## Overview
+
+On Day 11, I expanded the MiniSocialApp API by implementing a full set of user management endpoints, with strong emphasis on authorization, security, and proper access control.
+
+This stage moves the API closer to a real-world backend system, where different users have different permissions and capabilities.
+
+## Role-Based Access Control (RBAC)
+
+All endpoints are protected using JWT authentication and role checks:
+
+Admin-only routes for sensitive operations
+User-restricted actions to ensure users can only act on their own data
+Clear separation between admin privileges and regular user capabilities
+
+## Implemented Endpoints
+### GET /api/users (Admin Only)
+
+Retrieve all users in the system.
+
+Features:
+
+Protected with requireAdmin()
+Returns total user count and user list
+Ordered by latest registrations
+
+### GET /api/user?id={id}
+
+Retrieve a single user’s data.
+
+Access Control:
+
+Users can fetch their own profile only
+Admins can fetch any user
+
+Response:
+
+Full user profile including metadata (email, bio, role, timestamps)
+
+### PUT /api/user?id={id}
+
+Update user profile information.
+
+Features:
+
+Users can update their own data only
+Admins can update any user
+Supports fields like name, phone, bio, and location
+Updates updated_at timestamp automatically
+
+### DELETE /api/user?id={id} (Admin Only)
+
+Delete a user from the system.
+
+Features:
+
+Restricted to admins via requireAdmin()
+Prevents unauthorized deletions
+Clean success/error responses
+
+### PUT /api/change-password
+
+Allow authenticated users to securely change their password.
+
+Security Measures:
+
+Requires current password verification
+Enforces password confirmation match
+Validates minimum password length
+Uses password_hash() for secure storage
+Updates timestamp on success
+
+## API Testing (Postman)
+
+All endpoints were thoroughly tested using Postman:
+
+Verified role-based restrictions (user vs admin)
+Tested all HTTP methods: GET, PUT, DELETE
+Validated responses for:
+200 → Success
+400 → Bad request
+401 → Unauthorized
+403 → Forbidden
+404 → Not found
+500 → Server errors
+
+##  Screenshots (Day 11)
+
+### GET api/users (admin GETting all users)
+![register](./screenshots1/Screenshot_2026-03-28_19_54_31.png)
+
+### GET api/user (GETing by user before modifying user profile)
+![login](./screenshots1/Screenshot_2026-03-28_20_17_31.png)
+
+### PUT api/user (user modifying his profile)
+![login](./screenshots1/Screenshot_2026-03-28_21_50_46.png)
+
+### GET api/user (GETing by user after modifying user profile)
+![login](./screenshots1/Screenshot_2026-03-28_21_59_31.png)
+
+### GET api/change-password (user changing his password)
+![login](./screenshots1/Screenshot_2026-03-28_22_34_01.png)
+
+### DELETE api/user (user trying to delete himself)
+![login](./screenshots1/Screenshot_2026-03-28_22_09_45.png)
+
+### DELETE api/user (admin successfully deleting user)
+![login](./screenshots1/Screenshot_2026-03-28_22_13_20.png)
+
+### GET api/user (trying to GET deleted user)
+![login](./screenshots1/Screenshot_2026-03-28_22_14_51.png)
