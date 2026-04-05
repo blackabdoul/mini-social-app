@@ -84,6 +84,14 @@ function requireAuth() {
     if (!$payload) {
         sendResponse(401, ['error' => 'Unauthorized', 'message' => 'Invalid or expired token']);
     }
+
+    // Reject blacklisted tokens (logged-out sessions)
+    $check = $pdo->prepare("SELECT 1 FROM token_blacklist WHERE token = :token LIMIT 1");
+    $check->bindParam(':token', $token, PDO::PARAM_STR);
+    $check->execute();
+    if ($check->fetch()) {
+        sendResponse(401, ['error' => 'Unauthorized', 'message' => 'Token has been invalidated. Please log in again']);
+    }
     
     return $payload;
 }
