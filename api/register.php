@@ -1,5 +1,6 @@
 <?php
 require_once "config.php";
+require_once __DIR__ . "/../email_config.php";
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendResponse(405, ['error' => 'Method not allowed']);
@@ -46,9 +47,37 @@ $stmt->bindParam(':token', $verificationToken, PDO::PARAM_STR);
 $stmt->bindParam(':expires', $tokenExpires, PDO::PARAM_STR);
 
 if ($stmt->execute()) {
+    $newUserId = $pdo->lastInsertId();
+ 
+    // Send verification email (mirrors what register.php does in the session layer)
+    $verificationLink = ($_ENV['APP_URL'] ?? 'http://localhost/myApp') . '/verify.php?token=' . $verificationToken;
+ 
+    $subject = 'Verify Your Email Address';
+    $body    = "
+            <html>
+            <body style='font-family: Arial, sans-serif;'>
+                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <h2 style='color: #667eea;'>Verify Your Email</h2>
+                    <p>Thanks for registering! Please click the button below to verify your email address:</p>
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='$verificationLink'
+                        style='background: #667eea; color: white; padding: 15px 30px;
+                                text-decoration: none; border-radius: 5px; display: inline-block;'>
+                            Verify Email Address
+                        </a>
+                    </div>
+                    <p>Or copy this link:<br><strong>$verificationLink</strong></p>
+                    <p style='color: #666; font-size: 12px;'>This link expires in 24 hours.</p>
+                </div>
+            </body>
+            </html>
+            ";
+ 
+    sendEmail($email, $subject, $body);
+ 
     sendResponse(201, [
-        'message' => 'User registered successfully',
-        'user_id' => $pdo->lastInsertId(),
+        'message'               => 'User registered successfully. Please check your email to verify your account',
+        'user_id'               => $newUserId,
         'verification_required' => true
     ]);
 } else {
