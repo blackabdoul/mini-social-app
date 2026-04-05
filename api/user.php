@@ -49,6 +49,7 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $phone = trim($data['phone'] ?? '');
     $bio = trim($data['bio'] ?? '');
     $location = trim($data['location'] ?? '');
+    $dob      = !empty($data['dob']) ? $data['dob'] : null;
     
     $stmt = $pdo->prepare("
         UPDATE users 
@@ -62,6 +63,7 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $stmt->bindParam(':full_name', $fullName, PDO::PARAM_STR);
     $stmt->bindParam(':phone', $phone, PDO::PARAM_STR);
     $stmt->bindParam(':bio', $bio, PDO::PARAM_STR);
+    $stmt->bindParam(':dob', $dob, PDO::PARAM_STR);
     $stmt->bindParam(':location', $location, PDO::PARAM_STR);
     $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
     
