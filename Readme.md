@@ -908,3 +908,96 @@ Validated responses for:
 
 ### GET api/user (trying to GET deleted user)
 ![login](./screenshots1/Screenshot_2026-03-28_22_14_51.png)
+
+# Day 12 – Email Verification & Password Reset APIs
+
+## Overview
+
+On Day 12, I completed the remaining authentication flow endpoints, mirroring what the session layer already had in verify.php, resend-verification.php, forgot_passwd.php and reset_passwd.php — but now exposed as a clean REST API.
+
+➡️ /api/verify-email
+➡️ /api/resend-verification
+➡️ /api/forgot-password
+➡️ /api/reset-password
+
+## Endpoints
+
+### /api/verify-email
+Activates a user account using the token sent during registration.
+
+Key Features:
+    Accepts token via POST body
+    Validates token existence, expiry, and already-verified state
+    Clears token fields after successful verification
+Response:
+    200 → Email verified successfully
+    400 → Invalid token
+    409 → Already verified
+    410 → Token expired
+
+### /api/resend-verification
+Issues a fresh verification token and resends the email.
+
+Key Features:
+    Rejects already-verified accounts (409)
+    Generates new token with 24h expiry
+    Sends email via PHPMailer + Gmail SMTP
+    Returns 200 even if email not found (prevents account enumeration)
+Response:
+    200 → Email sent (or silently skipped if not found)
+    409 → Already verified
+
+### /api/forgot-password
+Initiates password recovery by emailing a one-time reset link.
+
+Key Features:
+    Silent user lookup — never reveals whether email is registered
+    Generates reset token with 1h expiry
+    Sends reset link via PHPMailer
+    Uses APP_URL from .env for the reset link base
+Response:
+    200 → Generic success in all cases (security)
+    400 → Invalid email format
+
+### /api/reset-password
+Completes the password reset using the token from the email.
+
+Key Features:
+    Validates token existence and expiry
+    Enforces password confirmation match and minimum length
+    Prevents reuse of the current password
+    Clears reset token after successful update
+Response:
+    200 → Password reset successfully
+    400 → Validation errors / same password reuse
+    410 → Token expired
+
+## API Testing (Postman)
+Tested full flow end to end:
+    Registered user → received verification email → verified via token
+    Attempted login before verification → blocked (403)
+    Requested password reset → received email → reset with new password
+    Attempted reuse of reset token → rejected (410)
+Verified status codes:
+    200 → Success
+    400 → Bad request / validation failure
+    403 → Not verified
+    409 → Conflict
+    410 → Expired token
+
+## Key Takeaways
+Understood why generic responses protect against account enumeration attacks
+Learned the difference between token expiry (410) and invalid token (400)
+Saw how the API layer mirrors session-based logic with cleaner separation of concerns
+Completed the full authentication lifecycle across both layers of the app
+
+## Screenshots (Day 12)
+
+### /api/resend-verification
+![resend-verification](./screenshots1/Screenshot_2026-04-12_18_51_24.png)
+### /api/verify-email
+![verify-email](./screenshots1/Screenshot_2026-04-13_08_12_35.png)
+### /api/forgot-password
+![forgot-password](./screenshots1/Screenshot_2026-04-13_08_18_54.png)
+### /api/reset-password
+![reset-password](./screenshots1/Screenshot_2026-04-13_08_53_34.png)
