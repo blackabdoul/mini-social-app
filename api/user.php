@@ -74,13 +74,25 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     }
 }
 
-// DELETE - Delete user
+// DELETE - Delete user (admin can delete anyone; users can delete only themselves)
 elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-    requireAdmin(); // Only admins can delete
-    
+    $currentUser = requireAuth();
+ 
+    $isSelf  = $currentUser['user_id'] == $userId;
+    $isAdmin = $currentUser['role'] === 'admin';
+ 
+    if (!$isSelf && !$isAdmin) {
+        sendResponse(403, ['error' => 'Access denied']);
+    }
+ 
+    // Admins cannot delete themselves via this endpoint
+    if ($isAdmin && $isSelf) {
+        sendResponse(403, ['error' => 'Admins cannot delete their own account']);
+    }
+ 
     $stmt = $pdo->prepare("DELETE FROM users WHERE id = :id");
     $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
-    
+ 
     if ($stmt->execute()) {
         sendResponse(200, ['message' => 'User deleted successfully']);
     } else {
