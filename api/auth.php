@@ -85,7 +85,9 @@ function requireAuth() {
         sendResponse(401, ['error' => 'Unauthorized', 'message' => 'Invalid or expired token']);
     }
 
-    // Reject blacklisted tokens (logged-out sessions)
+    // Reject blacklisted tokens — use $GLOBALS to reliably access $pdo
+    // created inside config.php's try/catch block
+    $pdo   = $GLOBALS['pdo'];
     $check = $pdo->prepare("SELECT 1 FROM token_blacklist WHERE token = :token LIMIT 1");
     $check->bindParam(':token', $token, PDO::PARAM_STR);
     $check->execute();
