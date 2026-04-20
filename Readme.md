@@ -1001,3 +1001,83 @@ Completed the full authentication lifecycle across both layers of the app
 ![forgot-password](./screenshots1/Screenshot_2026-04-13_08_18_54.png)
 ### /api/reset-password
 ![reset-password](./screenshots1/Screenshot_2026-04-13_08_53_34.png)
+
+# Day 13 – Bug Fixes, JWT Logout & Admin Role Toggle API
+
+## Overview
+
+On Day 13, I focused on hardening the existing API layer — fixing a scoping bug that broke authenticated endpoints, completing the logout system with real token invalidation, and finalizing the admin role toggle endpoint.
+
+➡️ /api/logout
+➡️ /api/admin-roles
+
+## What Was Fixed & Implemented
+
+### 🐛 PHP Scoping Bug (auth.php)
+
+After adding the token blacklist check to requireAuth(), all authenticated endpoints started returning 500.
+
+Root cause:
+$pdo is created in global scope but PHP functions cannot see global variables unless explicitly declared inside them
+
+Fix:
+Added global $pdo; as the first line inside requireAuth() so the blacklist query has access to the database connection
+
+### 🔒 JWT Logout (/api/logout)
+
+Implemented real server-side logout by blacklisting the token.
+
+Key Features:
+    Requires valid JWT (authenticated endpoint)
+    Extracts raw token from Authorization header
+    Inserts token into token_blacklist table with its expiry timestamp
+    requireAuth() now rejects any blacklisted token on future requests
+    Token becomes unusable immediately after logout even if not yet expired
+Response:
+    200 → Logged out successfully
+    500 → Logout failed
+
+### 👥 Admin Role Toggle (/api/admin-roles)
+
+Allows admins to promote or demote other users.
+
+Key Features:
+    Admin-only endpoint via requireAdmin()
+    Accepts user_id in request body
+    Fetches current role and toggles it (user → admin, admin → user)
+    Admins cannot change their own role (403)
+    Returns previous and new role in response for confirmation
+Response:
+    200 → Role updated successfully with previous_role and new_role
+    400 → user_id missing
+    403 → Attempting to change own role
+    404 → User not found
+
+### 🛠️ user.php Improvements
+
+Fixed PUT endpoint to include dob (date of birth) field which was present in the session layer but missing from the API
+
+Fixed DELETE endpoint to allow users to delete their own account, not just admins
+
+## API Testing (Postman)
+Confirmed logout blacklists token correctly
+Verified blacklisted token returns 401 on subsequent requests
+Tested role toggle: user → admin on first hit, admin → user on second hit
+Confirmed admins cannot toggle their own role (403)
+Validated dob saves correctly via PUT /api/user
+
+## Key Takeaways
+PHP functions are isolated from global scope — always declare global $pdo inside functions that need it
+JWT logout requires server-side blacklisting — discarding the token client-side alone is not enough
+A toggle endpoint is cleaner than separate promote/demote endpoints when the logic is symmetric
+
+## 🖼️ Screenshots (Day 13)
+
+### PUT /api/admin-roles (user → admin)
+![admin-roles toggle user to admin](./screenshots1/Screenshot_2026-04-19_22_17_01.png)
+
+### PUT /api/admin-roles (admin → user)
+![admin-roles toggle admin to user](./screenshots1/Screenshot_2026-04-19_22_17_07.png)
+
+### POST /api/logout
+![logout successful](./screenshots1/Screenshot_2026-04-19_22_20_32.png)
