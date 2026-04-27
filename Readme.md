@@ -1182,10 +1182,10 @@ Single controller handling two actions via hidden form field.
 
 ## 🖼️ Screenshots (Day 14)
 
-### Feed (admin view)
+### Admin's feed
 ![admin feed](./screenshots1/Screenshot_2026-04-27_06-32-42.png)
 
-### Feed after posting (success message)
+### User's feed (success message)
 ![user feed with success](./screenshots1/Screenshot_2026-04-27_06-31-26.png)
 
 ### New Post tab
