@@ -1081,3 +1081,116 @@ A toggle endpoint is cleaner than separate promote/demote endpoints when the log
 
 ### POST /api/logout
 ![logout successful](./screenshots1/Screenshot_2026-04-19_22_20_32.png)
+
+Looking at the screenshots — feed working with images and text posts, create tab, me tab all confirmed. Here's the caption:
+
+
+# Day 14 – Posts & Dashboard Redesign (Session Layer)
+
+## Overview
+
+On Day 14, I introduced the core social feature of MiniSocialApp — posts.
+This involved redesigning the dashboard from scratch and building the full
+create/delete post flow with image upload support on the session layer.
+
+➡️ dashboard.php (redesigned)
+➡️ postback.php (new)
+➡️ uploads/posts/ (new)
+➡️ posts table (new)
+
+## Database
+
+### posts table
+New table created to store all posts:
+
+    id          → auto-increment primary key
+    user_id     → foreign key referencing users(id), CASCADE on delete
+    content     → post text body (nullable — image-only posts allowed)
+    image_path  → relative path to uploaded image (nullable)
+    created_at  → auto-set on insert
+    updated_at  → auto-updates on row change
+
+Foreign key constraint ensures no orphan posts exist if a user is deleted.
+Indexes on user_id and created_at keep feed queries fast.
+
+## Dashboard Redesign (dashboard.php)
+
+Replaced the old card-based dashboard with a sticky navbar + tab layout.
+
+### Navbar
+    MiniSocial brand on the left
+    Theme toggle (light/dark, persisted via localStorage)
+    Admin panel shortcut (only visible to admins)
+    Avatar circle linking to profile (shows first letter of name)
+
+### Tabs
+Three tabs with no page reload — pure JS switching:
+
+    Feed      → public post feed, newest first
+    New Post  → compose UI with image upload
+    Me        → quick profile summary with links
+
+### Feed Tab
+    Fetches all posts via JOIN with users table to get author info
+    Posts display author avatar (initial letter), name, timestamp, content, image
+    Delete button visible only to post owner or admin
+    Staggered fade-up animation on post cards
+    Empty state shown when no posts exist
+
+### New Post Tab
+    Compose card with textarea (1000 char limit + live counter)
+    Image upload button (JPG, PNG, GIF, WEBP — max 5MB)
+    Shows selected filename after picking an image
+    After successful post, auto-switches back to Feed tab
+
+### Me Tab
+    Shows logged-in user's avatar, full name, email
+    Links to Edit Profile and Log out
+
+## Post Handler (postback.php)
+
+Single controller handling two actions via hidden form field.
+
+### create_post
+    Validates at least content or image is present
+    Enforces 1000 character limit
+    Validates image MIME type by reading file bytes (not just extension)
+    Enforces 5MB size limit
+    Generates unique filename with uniqid() to prevent collisions
+    Moves file to uploads/posts/ via move_uploaded_file()
+    Stores relative image path in DB
+    Uses Post/Redirect/Get pattern to prevent form resubmission
+
+### delete_post
+    Fetches post from DB before deleting to verify ownership
+    Server-side check — owner or admin only
+    Deletes DB row then removes image file from server with unlink()
+    Prevents orphan files accumulating in uploads/posts/
+
+## Bug Fixed Along The Way
+    Foreign key error on posts table creation — caused by INT vs INT UNSIGNED
+    mismatch between users.id and posts.user_id. Fixed by matching types.
+    Image upload failing with 500 — uploads/posts/ was owned by black instead
+    of www-data. Fixed with: sudo chown -R www-data:www-data uploads/
+
+## Key Takeaways
+    JOIN queries let you pull related data without duplicating it across tables
+    MIME type validation is safer than extension checking for file uploads
+    Post/Redirect/Get prevents duplicate submissions on browser refresh
+    File cleanup on delete is just as important as the delete query itself
+    PHP functions don't see global variables — always declare global $pdo inside functions
+
+## 🖼️ Screenshots (Day 14)
+
+### Feed (admin view)
+![admin feed](./screenshots1/Screenshot_2026-04-27_06-32-42.png)
+
+### Feed after posting (success message)
+![user feed with success](./screenshots1/Screenshot_2026-04-27_06-31-26.png)
+
+### New Post tab
+![new post tab](./screenshots1/Screenshot_2026-04-27_06-33-04.png)
+
+### Me tab
+![me tab](./screenshots1/Screenshot_2026-04-27_06-33-20.png)
+
