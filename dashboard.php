@@ -7,7 +7,6 @@ if(!isset($_SESSION["id_user"])){
 
 require_once "config.php";
 
-// Fetch posts with author info
 $stmt = $pdo->query("
     SELECT p.id, p.content, p.image_path, p.created_at,
            u.id AS user_id, u.full_name, u.email
@@ -29,6 +28,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     <title>MiniSocial — Home</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
             --accent:       #667eea;
@@ -85,10 +85,11 @@ unset($_SESSION['success'], $_SESSION['error']);
         .nav-btn {
             background:none; border:none; cursor:pointer;
             color:var(--muted); padding:8px; border-radius:8px;
-            font-size:18px; transition: background 0.2s, color 0.2s;
+            transition: background 0.2s, color 0.2s;
             text-decoration:none; display:flex; align-items:center;
         }
         .nav-btn:hover { background:var(--surface2); color:var(--text); }
+        .nav-btn svg { width:20px; height:20px; stroke:currentColor; }
         .nav-avatar {
             width:34px; height:34px; border-radius:50%;
             background: linear-gradient(135deg, var(--accent), #764ba2);
@@ -153,6 +154,7 @@ unset($_SESSION['success'], $_SESSION['error']);
             font-size:13px; font-weight:500; color:var(--muted);
             border:1px solid var(--border); transition:all 0.2s;
         }
+        .img-label svg { width:16px; height:16px; stroke:currentColor; }
         .img-label:hover { color:var(--accent); border-color:var(--accent); }
         .img-label input { display:none; }
         #img-name { font-size:12px; color:var(--muted); max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -191,9 +193,10 @@ unset($_SESSION['success'], $_SESSION['error']);
         .post-time  { font-size:12px; color:var(--muted); }
         .post-delete {
             background:none; border:none; cursor:pointer;
-            color:var(--muted); font-size:16px; padding:4px 8px;
+            color:var(--muted); padding:6px; display:flex; align-items:center;
             border-radius:6px; transition: background 0.2s, color 0.2s;
         }
+        .post-delete svg { width:17px; height:17px; stroke:currentColor; }
         .post-delete:hover { background:var(--error-bg); color:var(--danger); }
         .post-content {
             padding:2px 18px 14px; font-size:15px; line-height:1.6;
@@ -205,7 +208,7 @@ unset($_SESSION['success'], $_SESSION['error']);
         }
         /* EMPTY STATE */
         .empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
-        .empty-state .icon { font-size:48px; margin-bottom:12px; }
+        .empty-state svg { width:48px; height:48px; stroke:var(--muted); margin-bottom:12px; }
         .empty-state p { font-size:15px; }
         /* ME TAB */
         .profile-summary {
@@ -225,8 +228,6 @@ unset($_SESSION['success'], $_SESSION['error']);
         .ps-link { padding:9px 20px; border-radius:8px; font-size:14px; font-weight:500; text-decoration:none; transition:all 0.2s; }
         .ps-link-primary { background:var(--accent); color:white; }
         .ps-link-primary:hover { background:var(--accent-dark); }
-        .ps-link-ghost { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
-        .ps-link-ghost:hover { border-color:var(--accent); color:var(--accent); }
         .ps-link-danger { background:var(--error-bg); color:var(--danger); }
         .ps-link-danger:hover { background:var(--danger); color:white; }
         /* CHAR COUNTER */
@@ -244,9 +245,13 @@ unset($_SESSION['success'], $_SESSION['error']);
     <div class="nav-inner">
         <a class="nav-brand" href="dashboard.php">MiniSocial</a>
         <div class="nav-actions">
-            <button class="nav-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">🌙</button>
+            <button class="nav-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">
+                <i data-lucide="moon" id="themeIcon"></i>
+            </button>
             <?php if(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-                <a class="nav-btn" href="admin-dashboard.php" title="Admin panel">⚙️</a>
+            <a class="nav-btn" href="admin-dashboard.php" title="Admin panel">
+                <i data-lucide="settings"></i>
+            </a>
             <?php endif; ?>
             <a class="nav-avatar" href="profile.php" title="My profile">
                 <?= strtoupper(substr($_SESSION['full_name'] ?? $_SESSION['user_email'], 0, 1)) ?>
@@ -276,7 +281,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     <div class="tab-panel active" id="tab-feed">
         <?php if(empty($posts)): ?>
             <div class="empty-state">
-                <div class="icon">✍️</div>
+                <i data-lucide="pen-line"></i>
                 <p>No posts yet. Be the first to share something.</p>
             </div>
         <?php else: ?>
@@ -300,15 +305,17 @@ unset($_SESSION['success'], $_SESSION['error']);
                     <form method="POST" action="postback.php" onsubmit="return confirm('Delete this post?')">
                         <input type="hidden" name="action"  value="delete_post">
                         <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
-                        <button type="submit" class="post-delete" title="Delete">🗑</button>
+                        <button type="submit" class="post-delete" title="Delete">
+                            <i data-lucide="trash-2"></i>
+                        </button>
                     </form>
                     <?php endif; ?>
                 </div>
                 <?php if($post['content']): ?>
-                    <div class="post-content"><?= htmlspecialchars($post['content']) ?></div>
+                <div class="post-content"><?= htmlspecialchars($post['content']) ?></div>
                 <?php endif; ?>
                 <?php if($post['image_path']): ?>
-                    <img class="post-image" src="<?= htmlspecialchars($post['image_path']) ?>" alt="Post image" loading="lazy">
+                <img class="post-image" src="<?= htmlspecialchars($post['image_path']) ?>" alt="Post image" loading="lazy">
                 <?php endif; ?>
             </article>
             <?php endforeach; ?>
@@ -336,7 +343,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                 <div class="compose-footer">
                     <div class="compose-actions">
                         <label class="img-label">
-                            📷 Photo
+                            <i data-lucide="image"></i> Photo
                             <input type="file" name="image" accept="image/*" onchange="showFileName(this)">
                         </label>
                         <span id="img-name"></span>
@@ -370,16 +377,17 @@ unset($_SESSION['success'], $_SESSION['error']);
 <script>
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeBtn(savedTheme);
 
     function toggleTheme() {
         const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
-        updateThemeBtn(next);
+        updateThemeIcon(next);
     }
-    function updateThemeBtn(theme) {
-        document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
+    function updateThemeIcon(theme) {
+        const icon = document.getElementById('themeIcon');
+        icon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+        lucide.createIcons();
     }
     function switchTab(name, btn) {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -399,6 +407,9 @@ unset($_SESSION['success'], $_SESSION['error']);
     <?php if($success): ?>
     switchTab('feed', document.querySelectorAll('.tab')[0]);
     <?php endif; ?>
+
+    lucide.createIcons({ attrs: { 'stroke-width': 2 } });
+    updateThemeIcon(savedTheme);
 </script>
 </body>
 </html>
