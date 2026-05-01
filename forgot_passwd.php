@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <html>
             <body style='font-family: Arial, sans-serif;'>
                 <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-                    <h2 style='color: #667eea;'>Password Reset Request 🔐</h2>
+                    <h2 style='color: #667eea;'>Password Reset Request</h2>
                     <p>You requested to reset your password. Click the button below to create a new password:</p>
                     <div style='text-align: center; margin: 30px 0;'>
                         <a href='$resetLink' style='background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block;'>Reset Password</a>
@@ -161,7 +161,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </head>
 <body>
     <div class="box">
-        <h2>🔐 Forgot Password</h2>
+        <h2><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Forgot Password</h2>
         <p>Enter your email address and we'll send you instructions to reset your password.</p>
         
         <?php if ($error): ?>
