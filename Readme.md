@@ -1194,3 +1194,111 @@ Single controller handling two actions via hidden form field.
 ### Me tab
 ![me tab](./screenshots1/Screenshot_2026-04-27_06-33-20.png)
 
+# Day 15 – Posts API (GET, POST, DELETE)
+
+## Overview
+
+On Day 15, I built the API layer for posts — mirroring what the session
+layer already does in postback.php but now exposed as REST endpoints.
+
+➡️ /api/posts.php
+➡️ /api/post.php
+
+## Endpoints
+
+### GET /api/posts.php — fetch all posts (public)
+
+Returns all posts newest first, joined with author info.
+
+Key Features:
+    No authentication required — publicly accessible
+    Pagination via query params: ?limit=20&offset=0
+    Limit capped at 100 to prevent abuse
+    Returns total count alongside posts for frontend pagination
+Response:
+    200 → { total, limit, offset, posts[] }
+    405 → Method not allowed
+
+### GET /api/post.php?id=X — fetch single post (public)
+
+Returns a single post by ID with full author info.
+
+Key Features:
+    No authentication required
+    Validates id is numeric
+Response:
+    200 → { post: { id, content, image_path, created_at, updated_at, user_id, author_name, author_email } }
+    400 → Valid post ID required
+    404 → Post not found
+
+### POST /api/post.php — create post (JWT required)
+
+Creates a new post with optional image upload.
+
+Key Features:
+    Requires valid JWT token
+    Body must be form-data (not raw JSON) to support file upload
+    Validates at least content or image is present
+    Enforces 1000 character content limit
+    Validates image MIME type by reading file bytes
+    Enforces 5MB image size limit
+    Generates unique filename with uniqid() to prevent collisions
+    Stores relative image path in DB
+Response:
+    201 → Post created successfully + post_id
+    400 → Validation errors
+    401 → Unauthorized
+    500 → Upload or insert failure
+
+### DELETE /api/post.php?id=X — delete post (JWT required)
+
+Deletes a post by ID. Owner or admin only.
+
+Key Features:
+    Fetches post before deleting to verify ownership
+    Owner can delete their own posts
+    Admin can delete any post
+    Deletes image file from server with unlink() after DB row removal
+Response:
+    200 → Post deleted successfully
+    400 → Valid post ID required
+    403 → No permission
+    404 → Post not found
+    500 → Delete failure
+
+## API Testing (Postman)
+Tested full flow:
+    GET /api/posts.php → all posts returned with total, limit, offset metadata
+    GET /api/posts.php?limit=3&offset=1 → pagination working correctly
+    GET /api/post.php?id=5 → single post with author info returned
+    POST /api/post.php → created post with image using form-data + user JWT (201)
+    DELETE /api/post.php?id=4 → deleted post using admin JWT (200)
+Verified authorization rules:
+    POST without token → 401
+    DELETE on post you don't own (non-admin) → 403
+    DELETE on non-existent post → 404
+
+## Key Takeaways
+POST /api/post.php must use form-data not raw JSON — PHP's $_FILES only
+works with multipart/form-data. Sending JSON loses the file entirely.
+Pagination metadata (total, limit, offset) should always be returned
+alongside the data so any client can calculate pages without extra requests.
+Image cleanup on delete applies to the API layer too — unlink() must
+reference the correct path relative to the API file's location using __DIR__
+
+## 🖼️ Screenshots (Day 15)
+
+### GET /api/posts.php — all posts
+![GET all posts](./screenshots1/Screenshot_2026-05-01_11_39_02.png)
+
+### GET /api/posts.php?limit=3&offset=1 — pagination
+![GET posts with pagination](./screenshots1/Screenshot_2026-05-01_11_45_41.png)
+
+### GET /api/post.php?id=5 — single post
+![GET single post](./screenshots1/Screenshot_2026-05-02_09_03_05.png)
+
+### POST /api/post.php — create post with image (user token)
+![POST create post](./screenshots1/Screenshot_2026-05-02_09_27_52.png)
+
+### DELETE /api/post.php?id=4 — delete post (admin token)
+![DELETE post](./screenshots1/Screenshot_2026-05-02_09_31_31.png)
