@@ -1302,3 +1302,122 @@ reference the correct path relative to the API file's location using __DIR__
 
 ### DELETE /api/post.php?id=4 — delete post (admin token)
 ![DELETE post](./screenshots1/Screenshot_2026-05-02_09_31_31.png)
+
+# Day 16 – Likes (Session + API + Optimistic UI)
+
+## Overview
+
+On Day 16, I implemented the full likes feature across both layers
+simultaneously — session layer, API layer, and a no-refresh optimistic
+UI update so liking feels instant like a real social app.
+
+➡️ likeback.php (new)
+➡️ dashboard.php (updated)
+➡️ /api/like.php (new)
+
+## Database
+
+### likes table
+    id         → auto-increment primary key
+    user_id    → FK referencing users(id), CASCADE on delete
+    post_id    → FK referencing posts(id), CASCADE on delete
+    created_at → auto-set on insert
+    UNIQUE KEY (user_id, post_id) → makes double-liking structurally
+    impossible at the DB level, not just at the PHP level
+
+The UNIQUE KEY is what enables INSERT IGNORE toggle logic and guarantees
+data integrity even if there's a bug in application code.
+
+## Session Layer
+
+### likeback.php
+Single toggle handler — no separate like/unlike endpoints needed.
+
+Key Logic:
+    Session guard + POST-only check
+    Casts post_id to int immediately (rejects non-numeric input)
+    Verifies post exists before touching likes table
+    Checks if like row exists for this user + post combination
+    If yes → DELETE (unlike)
+    If no  → INSERT (like)
+    Redirects back to dashboard (Post/Redirect/Get pattern)
+
+### dashboard.php (query update)
+The posts query was extended to include like data in the same
+JOIN — no extra query per post:
+
+    LEFT JOIN likes l ON l.post_id = p.id
+    COUNT(l.id) AS like_count
+    MAX(CASE WHEN l.user_id = :me THEN 1 ELSE 0 END) AS liked_by_me
+
+LEFT JOIN ensures posts with zero likes are still returned.
+MAX(CASE WHEN...) collapses all like rows per post into a single
+1 or 0 indicating whether the current user has liked it.
+GROUP BY required because of the COUNT and MAX aggregates.
+
+### Optimistic UI (no page refresh)
+Replaced the like <form> with a plain <button> using data attributes.
+JavaScript intercepts the click, updates the UI instantly, then sends
+fetch() in the background.
+
+    data-post-id  → which post
+    data-liked    → current state (1 or 0)
+    data-count    → current like count
+
+toggleLike() flow:
+    1. Reads current state from data attributes
+    2. Immediately flips UI (heart fills, count updates) — optimistic
+    3. Sends POST to likeback.php via fetch()
+    4. On network/server error → rolls back to original state
+
+applyLikeState() handles all DOM updates in one place:
+updates data attributes, CSS class, count span, word span,
+and re-renders the Lucide heart so fill updates correctly.
+
+## API Layer (/api/like.php)
+
+### GET /api/like.php?post_id=X
+Returns like status for the authenticated user on a specific post.
+
+    200 → { post_id, like_count, liked_by_me }
+    400 → Valid post_id required
+    404 → Post not found
+
+### POST /api/like.php?post_id=X
+Toggles like on/off. Returns updated state after toggle.
+
+    200 → { action, post_id, like_count, liked_by_me }
+    action is either "liked" or "unliked"
+    like_count reflects the new count after the toggle
+    liked_by_me is derived from action === 'liked'
+    400 → Valid post_id required
+    404 → Post not found
+
+## API Testing (Postman)
+    GET /api/like.php?post_id=7 → returned like_count: 2, liked_by_me: false
+    POST /api/like.php?post_id=7 → action: "liked", like_count: 3, liked_by_me: true
+    POST /api/like.php?post_id=7 again → action: "unliked", like_count: 2, liked_by_me: false
+
+## Key Takeaways
+    UNIQUE KEY on (user_id, post_id) enforces like integrity at DB level
+    Aggregating like data in the main posts JOIN avoids N+1 queries
+    Optimistic UI makes interactions feel instant — roll back only on error
+    fetch() can call a redirect-based PHP handler without caring about
+    the response body — the redirect just gets followed silently
+
+## 🖼️ Screenshots (Day 16)
+
+### Feed — unliked state (user 1)
+![unliked state](./screenshots1/Screenshot_2026-05-04_16-06-08.png)
+
+### Feed — liked state (user 2, no refresh)
+![liked state optimistic](./screenshots1/Screenshot_2026-05-04_16-06-39.png)
+
+### GET /api/like.php?post_id=7
+![GET like status](./screenshots1/Screenshot_2026-05-04_16_20_23.png)
+
+### POST /api/like.php?post_id=7 — liked
+![POST like](./screenshots1/Screenshot_2026-05-04_16_21_08.png)
+
+### POST /api/like.php?post_id=7 — unliked
+![POST unlike](./screenshots1/Screenshot_2026-05-04_16_21_42.png)
