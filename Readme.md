@@ -1421,3 +1421,132 @@ Toggles like on/off. Returns updated state after toggle.
 
 ### POST /api/like.php?post_id=7 — unliked
 ![POST unlike](./screenshots1/Screenshot_2026-05-04_16_21_42.png)
+
+# Day 17 – Comments: Session Layer
+
+## Overview
+
+On Day 17, I added the comments feature to the session layer of MiniSocialApp.
+Comments are expandable under each post — hidden by default, revealed on click
+with no page reload, and auto-open after submitting or deleting a comment.
+
+➡️ commentback.php (new)
+➡️ dashboard.php (updated)
+
+## Database
+
+### comments table
+    id         → auto-increment primary key
+    post_id    → FK referencing posts(id), CASCADE on delete
+    user_id    → FK referencing users(id), CASCADE on delete
+    content    → VARCHAR(500), cannot be empty
+    created_at → auto-set on insert
+
+    INDEX on post_id   → speeds up fetching comments per post
+    INDEX on created_at → speeds up chronological ordering
+    Both FKs CASCADE on delete — no orphan comments if post or user is removed
+
+## dashboard.php — What Changed
+
+### Query update
+The main posts query was extended with a second LEFT JOIN:
+
+    LEFT JOIN comments c ON c.post_id = p.id
+    COUNT(DISTINCT c.id) AS comment_count
+
+DISTINCT is now required on both COUNT(l.id) and COUNT(c.id). With two
+LEFT JOINs on the same post, rows multiply — a post with 3 likes and 2
+comments produces 6 joined rows. Without DISTINCT, like_count would return
+6 instead of 3. DISTINCT collapses them back to accurate counts.
+
+### Second query — all comments fetched at once
+A separate query fetches every comment for every post in one call,
+joined with users to get author info, ordered oldest first so threads
+read top to bottom chronologically.
+
+Comments are then grouped by post_id in PHP into $commentsByPost so
+each post can look up its comments instantly during the loop — no
+extra DB query per post (avoids N+1 problem).
+
+### open_comments session variable
+After a comment is created or deleted, commentback.php stores the
+post_id in $_SESSION['open_comments']. When dashboard reloads after
+the redirect, it reads this value and adds the open CSS class to that
+post's comment section so it's automatically expanded — the user sees
+their comment or the deletion result without having to click again.
+The value is cleared immediately after reading so it only fires once.
+
+### Comment button in the post footer
+Added alongside the like button:
+
+    <button class="comment-btn" onclick="toggleComments(postId)">
+        <i data-lucide="message-circle"></i>
+        N Comments
+    </button>
+
+Displays the comment count from the query. Calls toggleComments() on click.
+
+### Expandable comments section
+Hidden by default (display:none). Gets the open class from toggleComments()
+or from the open_comments session variable after a redirect.
+
+Contains:
+    All existing comments for the post (avatar, name, time, content, delete X)
+    Delete button visible only to the comment owner or an admin
+    Confirm dialog before deletion
+    Comment input form at the bottom (text input + Send button)
+
+### toggleComments() JS function
+    classList.toggle('open') — one call handles both expand and collapse
+    After opening, focuses the comment input after 50ms delay — needed
+    because browsers won't focus an element that was just switched from
+    display:none without a short timeout
+
+## commentback.php
+
+Single handler for two actions via hidden form field.
+
+### create_comment
+    Casts post_id to int, trims content whitespace
+    Validates content is not empty after trim
+    Validates content is under 500 characters
+    Verifies the post still exists before inserting
+    Inserts row into comments table
+    Sets $_SESSION['open_comments'] = $postId so section auto-opens
+    Redirects back to dashboard (Post/Redirect/Get pattern)
+
+### delete_comment
+    Fetches comment first to get user_id and post_id
+    Server-side ownership check — self or admin only
+    Deletes the row
+    Sets $_SESSION['open_comments'] = $comment['post_id']
+    Redirects back to dashboard
+
+## Key Takeaways
+    COUNT(DISTINCT) is required when you have multiple LEFT JOINs on
+    the same table — without it joined rows multiply and counts are wrong
+    Fetching all comments in one query then grouping in PHP is always
+    better than one query per post inside the loop
+    The open_comments session variable keeps UX smooth after redirects —
+    the user always lands with their comment visible
+    50ms focus delay after display:none toggle is a real browser quirk
+
+## 🖼️ Screenshots (Day 17 — Session Layer)
+
+### Post card with comment feature added
+![post card with comment button](./screenshots1/Screenshot_2026-07-16_10-56-16.png)
+
+### Expanded section — no comments yet
+![expanded empty state](./screenshots1/Screenshot_2026-07-16_10-56-53.png)
+
+### One comment added
+![one comment](./screenshots1/Screenshot_2026-07-16_10-58-08.png)
+
+### Three comments from different users
+![three comments](./screenshots1/Screenshot_2026-07-16_11-13-42.png)
+
+### Delete confirmation dialog
+![delete confirm](./screenshots1/Screenshot_2026-07-16_11-16-34.png)
+
+### Two comments remaining after deletion
+![after deletion](./screenshots1/Screenshot_2026-07-16_11-17-09.png)
