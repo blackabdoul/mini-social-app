@@ -9,21 +9,43 @@ require_once "config.php";
 
 $userId = $_SESSION['id_user'];
 
-// Fetch posts with like count and whether current user liked each post
+// Fetch posts with like count, comment count, and current user's like status
 $stmt = $pdo->prepare("
     SELECT p.id, p.content, p.image_path, p.created_at,
            u.id AS user_id, u.full_name, u.email,
-           COUNT(l.id)                                           AS like_count,
-           MAX(CASE WHEN l.user_id = :me THEN 1 ELSE 0 END)     AS liked_by_me
+           COUNT(DISTINCT l.id)                                       AS like_count,
+           MAX(CASE WHEN l.user_id = :me THEN 1 ELSE 0 END)          AS liked_by_me,
+           COUNT(DISTINCT c.id)                                       AS comment_count
     FROM posts p
     JOIN users u ON p.user_id = u.id
-    LEFT JOIN likes l ON l.post_id = p.id
+    LEFT JOIN likes    l ON l.post_id = p.id
+    LEFT JOIN comments c ON c.post_id = p.id
     GROUP BY p.id, u.id
     ORDER BY p.created_at DESC
 ");
 $stmt->bindParam(':me', $userId, PDO::PARAM_INT);
 $stmt->execute();
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch all comments for all posts in one query (avoids N+1)
+$commentStmt = $pdo->query("
+    SELECT c.id, c.post_id, c.content, c.created_at,
+           u.id AS user_id, u.full_name, u.email
+    FROM comments c
+    JOIN users u ON c.user_id = u.id
+    ORDER BY c.created_at ASC
+");
+$allComments = $commentStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Group comments by post_id for easy lookup
+$commentsByPost = [];
+foreach ($allComments as $comment) {
+    $commentsByPost[$comment['post_id']][] = $comment;
+}
+
+// Which post should have comments auto-opened after redirect
+$openCommentsPostId = $_SESSION['open_comments'] ?? null;
+unset($_SESSION['open_comments']);
 
 $success = $_SESSION['success'] ?? '';
 $error   = $_SESSION['error'] ?? '';
@@ -38,129 +60,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :root {
-            --accent:       #667eea;
-            --accent-dark:  #5568d3;
-            --bg:           #f0f2f8;
-            --surface:      #ffffff;
-            --surface2:     #f7f8fc;
-            --border:       #e4e6ef;
-            --text:         #1a1d2e;
-            --muted:        #6b7280;
-            --danger:       #ef4444;
-            --like:         #e53e7d;
-            --success-bg:   #dcfce7;
-            --success-text: #166534;
-            --error-bg:     #fee2e2;
-            --error-text:   #991b1b;
-            --shadow:       0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(102,126,234,0.06);
-            --radius:       12px;
-        }
-        [data-theme="dark"] {
-            --bg:      #0f1117;
-            --surface: #1a1d2e;
-            --surface2:#232640;
-            --border:  #2e3152;
-            --text:    #e8eaf6;
-            --muted:   #8b90b8;
-            --shadow:  0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg); color: var(--text);
-            min-height: 100vh; transition: background 0.3s, color 0.3s;
-        }
-        .navbar {
-            position: sticky; top: 0; z-index: 100;
-            background: var(--surface); border-bottom: 1px solid var(--border);
-            transition: background 0.3s, border-color 0.3s;
-        }
-        .nav-inner {
-            max-width: 680px; margin: 0 auto;
-            padding: 0 20px; height: 58px;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .nav-brand { font-family:'DM Serif Display',serif; font-size:22px; color:var(--accent); letter-spacing:-0.5px; text-decoration:none; }
-        .nav-actions { display:flex; align-items:center; gap:8px; }
-        .nav-btn { background:none; border:none; cursor:pointer; color:var(--muted); padding:8px; border-radius:8px; transition:background 0.2s,color 0.2s; text-decoration:none; display:flex; align-items:center; }
-        .nav-btn:hover { background:var(--surface2); color:var(--text); }
-        .nav-btn svg { width:20px; height:20px; stroke:currentColor; }
-        .nav-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--accent),#764ba2); display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:600; cursor:pointer; text-decoration:none; }
-        .tabs-bar { background:var(--surface); border-bottom:1px solid var(--border); transition:background 0.3s,border-color 0.3s; }
-        .tabs-inner { max-width:680px; margin:0 auto; padding:0 20px; display:flex; gap:4px; }
-        .tab { padding:12px 18px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; border:none; background:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 0.2s,border-color 0.2s; font-family:'DM Sans',sans-serif; }
-        .tab:hover { color:var(--text); }
-        .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
-        .main { max-width:680px; margin:0 auto; padding:24px 20px 60px; }
-        .tab-panel { display:none; }
-        .tab-panel.active { display:block; }
-        .alert { padding:12px 16px; border-radius:var(--radius); font-size:14px; margin-bottom:16px; }
-        .alert-success { background:var(--success-bg); color:var(--success-text); }
-        .alert-error   { background:var(--error-bg);   color:var(--error-text); }
-        /* COMPOSE */
-        .compose-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:20px; box-shadow:var(--shadow); transition:background 0.3s,border-color 0.3s; }
-        .compose-top { display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; }
-        .compose-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--accent),#764ba2); display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:600; flex-shrink:0; }
-        .compose-textarea { flex:1; border:none; background:none; resize:none; font-family:'DM Sans',sans-serif; font-size:15px; color:var(--text); outline:none; min-height:70px; line-height:1.5; }
-        .compose-textarea::placeholder { color:var(--muted); }
-        .compose-footer { display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid var(--border); }
-        .compose-actions { display:flex; align-items:center; gap:8px; }
-        .img-label { display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:500; color:var(--muted); border:1px solid var(--border); transition:all 0.2s; }
-        .img-label svg { width:16px; height:16px; stroke:currentColor; }
-        .img-label:hover { color:var(--accent); border-color:var(--accent); }
-        .img-label input { display:none; }
-        #img-name { font-size:12px; color:var(--muted); max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .btn-post { background:var(--accent); color:white; border:none; padding:9px 22px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background 0.2s,transform 0.1s; }
-        .btn-post:hover { background:var(--accent-dark); }
-        .btn-post:active { transform:scale(0.98); }
-        /* POST CARD */
-        .post-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px; box-shadow:var(--shadow); overflow:hidden; transition:background 0.3s,border-color 0.3s; animation:fadeUp 0.3s ease both; }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .post-header { display:flex; align-items:center; justify-content:space-between; padding:16px 18px 10px; }
-        .post-author { display:flex; align-items:center; gap:10px; }
-        .post-avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent),#764ba2); display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:600; flex-shrink:0; }
-        .post-name  { font-size:14px; font-weight:600; color:var(--text); }
-        .post-time  { font-size:12px; color:var(--muted); }
-        .post-actions-right { display:flex; align-items:center; gap:4px; }
-        .post-delete { background:none; border:none; cursor:pointer; color:var(--muted); padding:6px; display:flex; align-items:center; border-radius:6px; transition:background 0.2s,color 0.2s; }
-        .post-delete svg { width:17px; height:17px; stroke:currentColor; }
-        .post-delete:hover { background:var(--error-bg); color:var(--danger); }
-        .post-content { padding:2px 18px 14px; font-size:15px; line-height:1.6; color:var(--text); white-space:pre-wrap; word-break:break-word; }
-        .post-image { width:100%; max-height:480px; object-fit:cover; display:block; border-top:1px solid var(--border); }
-        /* LIKE BAR */
-        .post-footer { display:flex; align-items:center; padding:10px 14px; border-top:1px solid var(--border); gap:4px; }
-        .like-btn {
-            display:flex; align-items:center; gap:6px;
-            background:none; border:none; cursor:pointer;
-            color:var(--muted); padding:6px 10px; border-radius:8px;
-            font-size:13px; font-weight:500; font-family:'DM Sans',sans-serif;
-            transition:background 0.2s, color 0.2s;
-        }
-        .like-btn svg { width:17px; height:17px; stroke:currentColor; transition:stroke 0.2s, fill 0.2s; }
-        .like-btn:hover { background:rgba(229,62,125,0.08); color:var(--like); }
-        .like-btn.liked { color:var(--like); }
-        .like-btn.liked svg { stroke:var(--like); fill:var(--like); }
-        /* EMPTY STATE */
-        .empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
-        .empty-state svg { width:48px; height:48px; stroke:var(--muted); margin-bottom:12px; }
-        .empty-state p { font-size:15px; }
-        /* ME TAB */
-        .profile-summary { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:30px; text-align:center; box-shadow:var(--shadow); }
-        .ps-avatar { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--accent),#764ba2); display:flex; align-items:center; justify-content:center; color:white; font-size:28px; font-weight:600; margin:0 auto 16px; }
-        .ps-name { font-family:'DM Serif Display',serif; font-size:22px; color:var(--text); margin-bottom:4px; }
-        .ps-email { font-size:14px; color:var(--muted); margin-bottom:20px; }
-        .ps-links { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-        .ps-link { padding:9px 20px; border-radius:8px; font-size:14px; font-weight:500; text-decoration:none; transition:all 0.2s; }
-        .ps-link-primary { background:var(--accent); color:white; }
-        .ps-link-primary:hover { background:var(--accent-dark); }
-        .ps-link-danger { background:var(--error-bg); color:var(--danger); }
-        .ps-link-danger:hover { background:var(--danger); color:white; }
-        .char-count { font-size:12px; color:var(--muted); }
-        .char-count.over { color:var(--danger); }
-        @media(max-width:600px){.nav-inner,.tabs-inner,.main{padding-left:14px;padding-right:14px;}.tab{padding:12px 12px;font-size:13px;}}
-    </style>
+    <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
 
@@ -242,7 +142,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                 <?php if($post['image_path']): ?>
                 <img class="post-image" src="<?= htmlspecialchars($post['image_path']) ?>" alt="Post image" loading="lazy">
                 <?php endif; ?>
-                <!-- LIKE BAR -->
+                <!-- LIKE + COMMENT BAR -->
                 <div class="post-footer">
                     <button
                         class="like-btn <?= $post['liked_by_me'] ? 'liked' : '' ?>"
@@ -255,6 +155,63 @@ unset($_SESSION['success'], $_SESSION['error']);
                         <span class="like-count"><?= $post['like_count'] ?></span>
                         <span class="like-word"><?= $post['like_count'] == 1 ? 'Like' : 'Likes' ?></span>
                     </button>
+                    <button class="comment-btn" onclick="toggleComments(<?= $post['id'] ?>)">
+                        <i data-lucide="message-circle"></i>
+                        <span id="ccount-<?= $post['id'] ?>"><?= $post['comment_count'] ?></span>
+                        <?= $post['comment_count'] == 1 ? 'Comment' : 'Comments' ?>
+                    </button>
+                </div>
+                <!-- COMMENTS SECTION -->
+                <div class="comments-section <?= $openCommentsPostId == $post['id'] ? 'open' : '' ?>" id="comments-<?= $post['id'] ?>">
+                    <?php $postComments = $commentsByPost[$post['id']] ?? []; ?>
+                    <?php if(empty($postComments)): ?>
+                        <p class="no-comments">No comments yet. Be the first!</p>
+                    <?php else: ?>
+                        <?php foreach($postComments as $c): ?>
+                        <div class="comment-item" id="comment-<?= $c['id'] ?>">
+                            <div class="comment-avatar">
+                                <?= strtoupper(substr($c['full_name'] ?: $c['email'], 0, 1)) ?>
+                            </div>
+                            <div class="comment-bubble">
+                                <div class="comment-meta">
+                                    <span class="comment-author">
+                                        <?= htmlspecialchars($c['full_name'] ?: explode('@', $c['email'])[0]) ?>
+                                    </span>
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <span class="comment-time">
+                                            <?= date('M j · g:i a', strtotime($c['created_at'])) ?>
+                                        </span>
+                                        <?php if($userId == $c['user_id'] || ($_SESSION['user_role'] ?? '') === 'admin'): ?>
+                                        <form method="POST" action="commentback.php" onsubmit="return confirm('Delete comment?')">
+                                            <input type="hidden" name="action"     value="delete_comment">
+                                            <input type="hidden" name="comment_id" value="<?= $c['id'] ?>">
+                                            <button type="submit" class="comment-delete" title="Delete">
+                                                <i data-lucide="x"></i>
+                                            </button>
+                                        </form>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <div class="comment-text"><?= htmlspecialchars($c['content']) ?></div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    <!-- ADD COMMENT FORM -->
+                    <form class="comment-form" method="POST" action="commentback.php">
+                        <input type="hidden" name="action"  value="create_comment">
+                        <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
+                        <input
+                            type="text"
+                            name="content"
+                            class="comment-input"
+                            placeholder="Write a comment..."
+                            maxlength="500"
+                            autocomplete="off"
+                            required
+                        >
+                        <button type="submit" class="comment-submit">Send</button>
+                    </form>
                 </div>
             </article>
             <?php endforeach; ?>
@@ -380,6 +337,17 @@ unset($_SESSION['success'], $_SESSION['error']);
         btn.querySelector('.like-word').textContent  = count === 1 ? 'Like' : 'Likes';
         // Re-render the heart icon so fill updates
         lucide.createIcons({ attrs: { 'stroke-width': 2 } });
+    }
+
+    // ── Toggle comments section ─────────────────────────────────
+    function toggleComments(postId) {
+        const section = document.getElementById('comments-' + postId);
+        section.classList.toggle('open');
+        if (section.classList.contains('open')) {
+            // Focus the comment input when opening
+            const input = section.querySelector('.comment-input');
+            if (input) setTimeout(() => input.focus(), 50);
+        }
     }
 </script>
 </body>
