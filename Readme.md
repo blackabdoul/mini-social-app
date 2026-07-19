@@ -1550,3 +1550,118 @@ Single handler for two actions via hidden form field.
 
 ### Two comments remaining after deletion
 ![after deletion](./screenshots1/Screenshot_2026-07-16_11-17-09.png)
+
+# Day 18 – Comments: API Layer
+
+## Overview
+
+On Day 18, I completed the comments feature by building the API layer —
+mirroring everything the session layer already does but as clean REST
+endpoints consumed via JWT authentication.
+
+➡️ /api/comments.php (new)
+➡️ /api/comment.php (new)
+
+## Endpoints
+
+### GET /api/comments.php?post_id=X — fetch all comments (public)
+
+Returns all comments for a specific post with full author info.
+
+Key Features:
+    No authentication required
+    Validates post_id is numeric
+    Verifies post exists before querying comments
+    JOIN with users table returns author_name and author_email
+    Ordered oldest first (ASC) so thread reads chronologically
+    Returns comment_count alongside the array
+Response:
+    200 → { post_id, comment_count, comments[] }
+    400 → Valid post_id required
+    404 → Post not found
+
+### POST /api/comment.php — create comment (JWT required)
+
+Creates a new comment on a post.
+
+Key Features:
+    Requires valid JWT token
+    Accepts raw JSON body: { post_id, content }
+    Trims content whitespace before validation
+    Validates content is not empty
+    Enforces 500 character limit
+    Verifies post exists before inserting
+    Returns comment_id and post_id on success
+Response:
+    201 → Comment posted successfully + comment_id + post_id
+    400 → Validation errors
+    401 → Unauthorized
+    404 → Post not found
+    500 → Insert failure
+
+### DELETE /api/comment.php?id=X — delete comment (JWT required)
+
+Deletes a comment by ID. Owner or admin only.
+
+Key Features:
+    Fetches comment before deleting to verify ownership
+    Returns post_id alongside comment_id in response
+    Owner can delete their own comments
+    Admin can delete any comment (tested separately)
+    Server-side check — not just UI-level restriction
+Response:
+    200 → Comment deleted successfully + comment_id + post_id
+    400 → Valid comment ID required
+    403 → No permission
+    404 → Comment not found
+    500 → Delete failure
+
+## API Testing (Postman)
+
+Login to get JWT token first:
+    POST /api/login.php → 200 + token
+
+GET all comments:
+    GET /api/comments.php?post_id=6 → 200
+    Returned comment_count: 3 with full author info per comment
+
+POST new comment:
+    POST /api/comment.php → 201
+    Body: { "post_id": 6, "content": "Please, who can tell me where to get this course" }
+    Returned comment_id: 4, post_id: 6
+
+DELETE by owner (comment_id 4):
+    DELETE /api/comment.php?id=4 → 200
+    Token belongs to the comment author
+    Returned comment_id: 4, post_id: 6
+
+DELETE by admin (comment_id 2):
+    DELETE /api/comment.php?id=2 → 200
+    Token belongs to admin, not the comment author
+    Returned comment_id: 2, post_id: 6
+
+## Key Takeaways
+    GET /api/comments.php is public — anyone can read comments,
+    only authenticated users can write or delete
+    The response always includes post_id so the client knows
+    which post to update without needing extra state
+    Two separate DELETE tests were needed — owner and admin —
+    because the authorization logic has two distinct code paths
+    that both need to be verified
+
+## 🖼️ Screenshots (Day 18 — API Layer)
+
+### POST /api/login.php — get JWT token
+![login for token](./screenshots1/Screenshot_2026-07-16_15_04_31.png)
+
+### POST /api/comment.php — create comment (201)
+![create comment](./screenshots1/Screenshot_2026-07-16_15_13_13.png)
+
+### GET /api/comments.php?post_id=6 — all comments
+![get comments](./screenshots1/Screenshot_2026-07-16_15_19_32.png)
+
+### DELETE /api/comment.php?id=4 — owner deletes own comment
+![delete by owner](./screenshots1/Screenshot_2026-07-16_15_27_13.png)
+
+### DELETE /api/comment.php?id=2 — admin deletes another user's comment
+![delete by admin](./screenshots1/Screenshot_2026-07-16_15_31_45.png)
