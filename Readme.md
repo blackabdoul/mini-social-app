@@ -1665,3 +1665,83 @@ DELETE by admin (comment_id 2):
 
 ### DELETE /api/comment.php?id=2 — admin deletes another user's comment
 ![delete by admin](./screenshots1/Screenshot_2026-07-16_15_31_45.png)
+
+# Day 19 – Security Audit & Hardening
+
+## Overview
+
+On Day 19, instead of adding a new feature, I did a full security and
+quality audit across the entire codebase — session layer, API layer,
+and configuration files. This was in preparation for wrapping up the
+project properly.
+
+## Audit Checklist
+
+Checked every file for:
+    Debug code left in (var_dump, print_r, display_errors)
+    Missing session/auth guards on any page
+    Missing input validation on any endpoint
+    Consistent password hashing (password_hash / password_verify)
+    SQL injection safety (prepared statements throughout)
+    File upload validation consistency between session and API layers
+    Hardcoded credentials anywhere outside .env
+    .gitignore coverage for sensitive files
+    CORS configuration on the API
+
+## Findings
+
+### 🔴 Critical — Hardcoded Gmail App Password
+email_config.php had the Gmail SMTP username and App Password written
+directly in plain text. This file was NOT covered by .gitignore —
+only .env, .htaccess, uploads, and PHPMailer-master were ignored.
+
+Confirmed via git log that this file was committed on Day 4 and has
+been in git history ever since. Anyone with repo access could see the
+live credentials in that commit.
+
+### 🟡 CORS wide open
+Access-Control-Allow-Origin: * in api/config.php allows any website
+to call the API. Acceptable during Postman-only testing, but flagged
+for tightening once a real frontend domain exists.
+
+### 🟢 Everything else — clean
+    No debug code in any of my own files
+    Every session page has session_start() + proper auth guard
+    Every API endpoint has consistent requireAuth()/requireAdmin() usage
+    No test/temp/backup files anywhere in the project
+    Image upload validation identical across both layers
+    Password hashing consistent everywhere
+    .env and .htaccess properly gitignored
+
+## Fixes Applied
+
+### email_config.php
+    Removed hardcoded Host, Username, and Password
+    Now reads all three from $_ENV via load-env.php
+    require_once used so loading .env twice (once in config.php,
+    once here) causes no issue
+
+### .env
+    Added SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD, APP_URL
+    Credentials now live only in the gitignored file
+
+### Immediate action taken
+    Regenerated the Gmail App Password — the old one is treated as
+    compromised regardless of repo visibility, since it sat in git
+    history for 15+ days of commits
+
+## Key Takeaways
+    A file can be excluded from .gitignore by omission just as easily
+    as by mistake — always double check every config file individually,
+    not just the ones you remember creating
+    Credentials committed to git history stay there even after being
+    removed from the current file — rotating the secret is the only
+    real fix, not just deleting the line
+    require_once makes shared setup files (like env loaders) safe to
+    include from multiple entry points without side effects
+    An audit day with zero new features is still real progress —
+    hardening is part of shipping, not separate from it
+
+## 🖼️ No screenshots this day
+This was a code-level audit with no new UI or API behavior to
+demonstrate — the fix is in the files themselves.
