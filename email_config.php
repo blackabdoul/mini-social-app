@@ -2,6 +2,8 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+require_once __DIR__ . '/load-env.php';
+
 // Load PHPMailer classes
 require 'PHPMailer-master/src/Exception.php';
 require 'PHPMailer-master/src/PHPMailer.php';
@@ -13,10 +15,10 @@ function sendEmail($to, $subject, $htmlMessage) {
     try {
         // Server settings
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
+        $mail->Host       = $_ENV['SMTP_HOST'];
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'abdulmaliklawal12345@gmail.com';        
-        $mail->Password   = 'ojnnmclqzlhuwfil';   
+        $mail->Username   = $_ENV['SMTP_USERNAME'];
+        $mail->Password   = $_ENV['SMTP_PASSWORD'];
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         
@@ -25,7 +27,7 @@ function sendEmail($to, $subject, $htmlMessage) {
         $mail->SMTPDebug  = 0; // 0 = off, 2 = detailed debug
         
         // Recipients
-        $mail->setFrom('noreply@yoursite.com', 'MiniSocialApp');
+        $mail->setFrom('noreply@minisocialapp.com', 'MiniSocialApp');
         $mail->addAddress($to);
         
         // Content
