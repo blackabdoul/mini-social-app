@@ -1745,3 +1745,103 @@ for tightening once a real frontend domain exists.
 ## 🖼️ No screenshots this day
 This was a code-level audit with no new UI or API behavior to
 demonstrate — the fix is in the files themselves.
+
+# Day 20 – Wrapping Up: End of Active Development
+
+## Overview
+
+Day 20 marks the end of active feature development on MiniSocialApp.
+This project started as a way to learn backend fundamentals through
+PHP sessions and grew into a full-stack social app with a parallel
+REST API layer, built and documented day by day over 20 sessions
+(with a break in the middle for school exams and other projects).
+
+This entry is a full retrospective of what was built, not a new feature.
+
+## The Journey — Day by Day
+
+    Day 1   → Session-based login system (the absolute basics)
+    Day 2   → Registration with password hashing
+    Day 3   → Email verification (token-based)
+    Day 4   → Real email delivery via PHPMailer + Gmail SMTP
+    Day 5   → Forgot/reset password flow
+    Day 6   → Full profile management (edit, change password, delete account)
+    Day 7   → Selective dark mode (dashboard + profile only)
+    Day 8   → Admin system with role-based access control
+    Day 9   → API foundation — JWT authentication from scratch
+    Day 10  → API register + login endpoints
+    Day 11  → API user management endpoints (RBAC enforced)
+    Day 12  → API verify-email, resend, forgot-password, reset-password
+    Day 13  → Bug fixes — PHP scoping bug, JWT logout, admin role toggle
+    Day 14  → Posts feature + full dashboard redesign (navbar + tabs)
+    Day 15  → Posts API (GET, POST, DELETE) with pagination
+    Day 16  → Likes — session + API + optimistic no-refresh UI
+    Day 17  → Comments — session layer (expandable sections)
+    Day 18  → Comments API layer
+    Day 19  → Security audit and hardening
+    Day 20  → This — closing the loop
+
+## What The Final App Actually Does
+
+### Authentication (both layers)
+    Register, login, logout with JWT + server-side token blacklist
+    Email verification with expiring tokens
+    Forgot/reset password with silent lookup (no account enumeration)
+    Resend verification
+
+### User Management (both layers)
+    View and edit profile (name, phone, bio, location, dob)
+    Change password with current-password verification
+    Delete own account
+    Admin: view all users, toggle roles, delete any user
+
+### Social Features (both layers)
+    Create posts with optional image upload (MIME-validated, 5MB cap)
+    Delete own posts (or any post as admin)
+    Like/unlike posts — optimistic UI, no page reload
+    Comment on posts — expandable sections, delete own comments (or any as admin)
+
+### Quality & Security
+    Every endpoint uses prepared statements — no SQL injection surface
+    Password hashing via password_hash/password_verify throughout
+    Server-side authorization checks on every owner/admin action
+    Consistent MIME validation on every file upload path
+    No hardcoded secrets — all credentials in .env
+    No emojis — Lucide icon set throughout, consistent visual language
+    Dark mode support across the whole authenticated experience
+
+## What Was Learned (The Real Takeaway)
+
+This project was never really about building a social app. It was
+about internalizing the fundamentals that every backend system needs:
+
+    Sessions vs tokens — and why they solve different problems
+    Why PHP functions don't inherit global scope, and what that
+    breaks silently until you understand it
+    The Post/Redirect/Get pattern and why every form handler should use it
+    N+1 queries and why COUNT(DISTINCT) matters with multiple JOINs
+    Why a git-committed secret is compromised forever, not just until
+    you delete the line
+    The difference between "it works" and "it's safe to ship" —
+    and why those are two separate questions
+
+## What's Not Being Built (On Purpose)
+
+Follows/followers, real-time notifications, post editing, comment
+likes, search, and a full MVC refactor with a router were all
+considered. None of them were missing pieces — they were directions
+the project could have gone in, not gaps it needed filling. Recognizing
+the difference between "more features" and "the point being made" is
+its own lesson.
+
+## What's Next
+
+MiniSocialApp is feature-complete as a learning project and stays as
+a reference — both a portfolio piece and a foundation to look back on.
+The next project starts clean, applying everything from here:
+proper MVC structure from day one, a real router, and the instinct to
+audit before calling something done.
+
+## 🖼️ No new screenshots
+This entry is a retrospective — every feature shown here was already
+documented on its respective day.
